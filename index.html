@@ -409,8 +409,8 @@
       <button class="nav-btn" data-mode="variants">
         <span>🎯</span> 历年真题变式 (657题)
       </button>
-      <button class="nav-btn" data-mode="subjective">
-        <span>📑</span> 黄金大题背诵 (简答·论述)
+      <button class="nav-btn" data-mode="goldFree">
+        <span>🏆</span> 黄金模考·自由做题 (41题)
       </button>
       <button class="nav-btn" data-mode="exam">
         <span>⏱️</span> 全真限时模考
@@ -626,64 +626,69 @@
       </div>
     </section>
 
-    <!-- MODE 4: 黄金大题背诵 (简答·论述题) -->
-    <section class="mode-view" id="viewSubjective">
+    <!-- MODE 4: 黄金模考·自由做题 (41题全题型专区) -->
+    <section class="mode-view" id="viewGoldFree">
       <div class="control-panel">
-        <div class="pill-group" id="subTypeFilter">
-          <button class="pill-btn active" data-subtype="all">全部大题 (6道)</button>
-          <button class="pill-btn" data-subtype="short">简答题 (4道 · 各10分)</button>
-          <button class="pill-btn" data-subtype="essay">论述题 (2道 · 各20分)</button>
+        <div class="pill-group" id="gfTypeFilter">
+          <button class="pill-btn active" data-gftype="all">全部题目 (41题)</button>
+          <button class="pill-btn" data-gftype="choice">单选题 (35题 · 各2分)</button>
+          <button class="pill-btn" data-gftype="short">简答题 (4题 · 各10分)</button>
+          <button class="pill-btn" data-gftype="essay">论述题 (2题 · 各20分)</button>
         </div>
 
         <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-          <button class="action-btn" id="btnSpeakSubjective" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;">
-            🔊 语音朗读答案
+          <button class="action-btn" id="btnGfSpeak" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;">
+            🔊 语音朗读
           </button>
-          <button class="action-btn" id="btnToggleDraft" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;">
+          <button class="action-btn" id="btnGfRandom" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;">
+            🎲 随机抽题
+          </button>
+          <button class="action-btn" id="btnGfToggleDraft" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;">
             ✏️ 作答草稿纸
           </button>
         </div>
       </div>
 
-      <div class="flashcard-container">
-        <div class="flashcard-meta">
-          <span class="flashcard-tag-badge" id="subTypeBadge">简答题 · 10分</span>
-          <span class="flashcard-progress" id="subProgressIndicator">第 1 / 6 题</span>
+      <div class="quiz-card" style="margin-bottom: 1.25rem;">
+        <div class="quiz-header">
+          <span class="flashcard-tag-badge" id="gfTypeBadge">单项选择题 · 2分</span>
+          <span class="flashcard-progress" id="gfProgressIndicator">第 1 / 41 题</span>
         </div>
 
-        <div class="flashcard-title" id="subStemTitle">题目加载中...</div>
+        <div class="quiz-stem" id="gfStemTitle">题目加载中...</div>
 
-        <!-- Optional User Draft Area -->
-        <div id="subDraftArea" style="display: none; margin-bottom: 1.25rem;">
+        <!-- Optional User Draft Area (for Short/Essay) -->
+        <div id="gfDraftArea" style="display: none; margin-bottom: 1.25rem;">
           <div style="font-size: 0.85rem; font-weight: 600; color: var(--accent-primary); margin-bottom: 0.4rem; display: flex; justify-content: space-between;">
-            <span>✏️ 作答草稿纸（随写随存，用于答题前梳理要点）：</span>
-            <span id="subDraftSaveTip" style="font-size: 0.75rem; color: var(--text-muted);">自动已保存</span>
+            <span>✏️ 作答草稿纸（随写随存，用于梳理作答要点）：</span>
+            <span id="gfDraftSaveTip" style="font-size: 0.75rem; color: var(--text-muted);">自动已保存</span>
           </div>
-          <textarea id="subDraftInput" class="exam-subjective-textarea" placeholder="请在此处梳理您的答题要点，答完后点击下方展开标准答案进行对照..."></textarea>
+          <textarea id="gfDraftInput" class="exam-subjective-textarea" placeholder="请在此处输入您的作答思路或完整要点，写完后点击下方展开官方标准答案与踩分点进行核对..."></textarea>
         </div>
 
-        <!-- Answer / Scoring Points Area -->
-        <div id="subAnswerContainer"></div>
+        <!-- Dynamic Body: Choice Options OR Subjective Scoring Points -->
+        <div id="gfDynamicBody"></div>
 
         <!-- Actions -->
         <div class="flashcard-actions">
           <div class="btn-group-left">
-            <button class="action-btn success" id="btnMarkSubMastered">
-              <span>✓</span> 标记已背熟
+            <button class="action-btn success" id="btnGfMarkMastered">
+              <span>✓</span> 标记已掌握
             </button>
-            <button class="action-btn warning" id="btnMarkSubStar">
-              <span>★</span> 重点待复背
+            <button class="action-btn warning" id="btnGfMarkStar">
+              <span>★</span> 重点待复查
             </button>
           </div>
           <div class="btn-group-right">
-            <button class="action-btn" id="btnPrevSub">← 上一题</button>
-            <button class="action-btn primary" id="btnNextSub">下一题 →</button>
+            <button class="action-btn" id="btnGfPrev">← 上一题</button>
+            <button class="action-btn primary" id="btnGfNext">下一题 →</button>
           </div>
         </div>
 
         <div class="jump-panel">
-          <span style="font-size: 0.82rem; color: var(--text-sub);">切换大题：</span>
-          <input type="range" class="slider-range" id="subSlider" min="0" max="5" value="0">
+          <span style="font-size: 0.82rem; color: var(--text-sub);">跳转题目：</span>
+          <input type="range" class="slider-range" id="gfSlider" min="0" max="40" value="0">
+          <input type="number" id="gfJumpInput" min="1" max="41" value="1" style="width: 55px; padding: 0.3rem; border-radius: 6px; border: 1px solid var(--card-border); background: rgba(0,0,0,0.15); color: var(--text-main); text-align: center;">
         </div>
       </div>
     </section>
@@ -894,11 +899,12 @@
 
       // Recitation & Flashcard
       reciteMode: 'blank', // 'blank', 'full' or 'titleOnly'
-      // Subjective Questions
-      subFilter: 'all',
-      subFiltered: [],
-      subIndex: 0,
-      subRevealed: false,
+      // Gold Free Practice State
+      gfFilter: 'all', // 'all', 'choice', 'short', 'essay'
+      gfFiltered: [],
+      gfIndex: 0,
+      gfRevealed: false,
+      gfChoiceAnswers: {}, // key: questionId, val: selectedOptionIdx
       subDrafts: STORAGE.getSubDrafts ? STORAGE.getSubDrafts() : {},
       subMastered: new Set(STORAGE.getSubMastered ? STORAGE.getSubMastered() : []),
       subStarred: new Set(STORAGE.getSubStarred ? STORAGE.getSubStarred() : []),
@@ -1122,79 +1128,155 @@
       window.speechSynthesis.speak(utter);
     }
 
-    // --- SUBJECTIVE QUESTIONS LOGIC (黄金大题：简答题 + 论述题) ---
-    function getCombinedSubjective() {
+    // --- GOLD FREE PRACTICE LOGIC (黄金模考全题型自由做题：单选+简答+论述) ---
+    function getGoldFreeAll() {
       if (typeof GOLD_EXAM_DATA === 'undefined') return [];
+      const choices = (GOLD_EXAM_DATA.choiceQuestions || []).map((c, idx) => ({
+        ...c,
+        overallNum: idx + 1,
+        type: 'choice',
+        typeLabel: '单项选择题',
+        score: 2
+      }));
       const shorts = (GOLD_EXAM_DATA.shortQuestions || []).map((s, idx) => ({
         ...s,
-        globalIdx: idx,
-        displayNum: idx + 1
+        overallNum: choices.length + idx + 1,
+        type: 'short',
+        typeLabel: '简答题',
+        score: 10
       }));
       const essays = (GOLD_EXAM_DATA.essayQuestions || []).map((e, idx) => ({
         ...e,
-        globalIdx: shorts.length + idx,
-        displayNum: shorts.length + idx + 1
+        overallNum: choices.length + shorts.length + idx + 1,
+        type: 'essay',
+        typeLabel: '论述题',
+        score: 20
       }));
-      return [...shorts, ...essays];
+      return [...choices, ...shorts, ...essays];
     }
 
-    function filterSubjective() {
-      const all = getCombinedSubjective();
-      if (state.subFilter === 'short') {
-        state.subFiltered = all.filter(q => q.type === 'short');
-      } else if (state.subFilter === 'essay') {
-        state.subFiltered = all.filter(q => q.type === 'essay');
+    function filterGoldFree() {
+      const all = getGoldFreeAll();
+      if (state.gfFilter === 'choice') {
+        state.gfFiltered = all.filter(q => q.type === 'choice');
+      } else if (state.gfFilter === 'short') {
+        state.gfFiltered = all.filter(q => q.type === 'short');
+      } else if (state.gfFilter === 'essay') {
+        state.gfFiltered = all.filter(q => q.type === 'essay');
       } else {
-        state.subFiltered = all;
+        state.gfFiltered = all;
       }
-      if (state.subIndex >= state.subFiltered.length) {
-        state.subIndex = Math.max(0, state.subFiltered.length - 1);
+      if (state.gfIndex >= state.gfFiltered.length) {
+        state.gfIndex = Math.max(0, state.gfFiltered.length - 1);
       }
-      state.subRevealed = false;
-      renderSubjective();
+      state.gfRevealed = false;
+      renderGoldFree();
     }
 
-    function renderSubjective() {
-      const list = state.subFiltered;
+    function renderGoldFree() {
+      const list = state.gfFiltered;
       if (!list || list.length === 0) return;
-      const q = list[state.subIndex];
+      const q = list[state.gfIndex];
 
-      const typeBadge = document.getElementById('subTypeBadge');
+      const typeBadge = document.getElementById('gfTypeBadge');
       if (typeBadge) typeBadge.textContent = q.typeLabel + ' · ' + q.score + '分';
 
-      const prog = document.getElementById('subProgressIndicator');
-      if (prog) prog.textContent = '第 ' + (state.subIndex + 1) + ' / ' + list.length + ' 题 (全卷大题#' + q.displayNum + ')';
+      const prog = document.getElementById('gfProgressIndicator');
+      if (prog) prog.textContent = '第 ' + (state.gfIndex + 1) + ' / ' + list.length + ' 题 (全卷#' + q.overallNum + ')';
 
-      const stemEl = document.getElementById('subStemTitle');
-      if (stemEl) stemEl.textContent = q.num + '、' + q.stem;
+      const stemEl = document.getElementById('gfStemTitle');
+      if (stemEl) stemEl.textContent = q.overallNum + '、' + q.stem;
 
-      // Draft textarea
-      const draftInput = document.getElementById('subDraftInput');
-      if (draftInput) {
-        draftInput.value = (state.subDrafts && state.subDrafts[q.id]) || '';
-      }
+      const dynamicBody = document.getElementById('gfDynamicBody');
+      const draftArea = document.getElementById('gfDraftArea');
+      const btnToggleDraft = document.getElementById('btnGfToggleDraft');
 
-      // Answer container
-      const ansContainer = document.getElementById('subAnswerContainer');
-      if (ansContainer) {
-        ansContainer.innerHTML = '';
-        if (!state.subRevealed) {
+      if (q.type === 'choice') {
+        // CHOICE QUESTION
+        if (draftArea) draftArea.style.display = 'none';
+        if (btnToggleDraft) btnToggleDraft.style.display = 'none';
+
+        dynamicBody.innerHTML = '';
+        const optsList = document.createElement('div');
+        optsList.className = 'options-grid';
+        optsList.style.marginBottom = '1.25rem';
+        const letters = ['A', 'B', 'C', 'D'];
+        const userAns = state.gfChoiceAnswers[q.id];
+        const isAnswered = userAns !== undefined;
+
+        q.options.forEach((optText, optIdx) => {
+          const item = document.createElement('div');
+          item.className = 'option-item';
+          if (isAnswered) {
+            item.classList.add('disabled');
+            if (optIdx === q.answer) item.classList.add('correct');
+            else if (optIdx === userAns) item.classList.add('wrong');
+          }
+          item.innerHTML = '<div class="option-letter">' + letters[optIdx] + '</div><div class="option-text">' + optText + '</div>';
+          item.onclick = () => {
+            if (state.gfChoiceAnswers[q.id] !== undefined) return;
+            state.gfChoiceAnswers[q.id] = optIdx;
+            if (optIdx === q.answer) {
+              sound.playSuccess();
+            } else {
+              sound.playWrong();
+              state.wrong.add(q.id);
+              STORAGE.setWrong(Array.from(state.wrong));
+              updateStatsRibbon();
+            }
+            renderGoldFree();
+          };
+          optsList.appendChild(item);
+        });
+        dynamicBody.appendChild(optsList);
+
+        // Explanation Card
+        if (isAnswered) {
+          const expCard = document.createElement('div');
+          expCard.className = 'explain-card active';
+          expCard.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <span class="explain-title">💡 官方标准答案：${q.answerLetter} 选项</span>
+              <button class="action-btn" id="btnGfRetryChoice" style="font-size: 0.75rem; padding: 0.2rem 0.6rem;">🔄 重新作答本题</button>
+            </div>
+            <div class="explain-body">${q.explanation || '本题考查核心知识点，根据题目背景与基本概念分析即可得出答案。'}</div>
+          `;
+          dynamicBody.appendChild(expCard);
+          const btnRetry = expCard.querySelector('#btnGfRetryChoice');
+          if (btnRetry) {
+            btnRetry.onclick = () => {
+              sound.playClick();
+              delete state.gfChoiceAnswers[q.id];
+              renderGoldFree();
+            };
+          }
+        }
+      } else {
+        // SUBJECTIVE (SHORT OR ESSAY)
+        if (btnToggleDraft) btnToggleDraft.style.display = 'inline-flex';
+        const draftInput = document.getElementById('gfDraftInput');
+        if (draftInput) {
+          draftInput.value = (state.subDrafts && state.subDrafts[q.id]) || '';
+        }
+
+        dynamicBody.innerHTML = '';
+        if (!state.gfRevealed) {
           const maskBox = document.createElement('div');
           maskBox.className = 'title-only-mask-card';
           maskBox.innerHTML = `
             <div style="font-size: 2.2rem; margin-bottom: 0.75rem;">🔒</div>
             <div style="font-size: 1.15rem; font-weight: 600; color: var(--accent-primary); margin-bottom: 0.5rem;">标准参考答案与采分要点已隐藏</div>
-            <div style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1.25rem;">建议先在心中默背或在草稿纸中梳理核心得分点</div>
-            <button class="action-btn primary" id="btnRevealSubAnswer" style="padding: 0.55rem 1.5rem; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 0.5rem; margin: 0 auto; pointer-events: none;">
-              <span>👁️</span> 点击展开参考答案与采分点 (或按空格键)
+            <div style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1.25rem;">建议先在脑海中默背或在草稿纸中梳理核心得分要点</div>
+            <button class="action-btn primary" id="btnRevealGfAnswer" style="padding: 0.55rem 1.5rem; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 0.5rem; margin: 0 auto; pointer-events: none;">
+              <span>👁️</span> 点击展开官方参考答案与采分要点 (或按空格键)
             </button>
           `;
           maskBox.onclick = () => {
             sound.playClick();
-            state.subRevealed = true;
-            renderSubjective();
+            state.gfRevealed = true;
+            renderGoldFree();
           };
-          ansContainer.appendChild(maskBox);
+          dynamicBody.appendChild(maskBox);
         } else {
           const wrap = document.createElement('div');
           wrap.style.cssText = 'animation: fadeIn 0.3s ease;';
@@ -1204,7 +1286,6 @@
           titleRow.innerHTML = `<div style="font-weight: 700; color: var(--accent-primary); font-size: 1rem;">📋 官方标准参考答案与按点赋分标准：</div>`;
           wrap.appendChild(titleRow);
 
-          // Points
           q.points.forEach((pt, pIdx) => {
             const card = document.createElement('div');
             card.className = 'sub-point-item';
@@ -1215,7 +1296,6 @@
             wrap.appendChild(card);
           });
 
-          // Remask button
           const remaskWrap = document.createElement('div');
           remaskWrap.style.cssText = 'margin-top: 1rem; display: flex; justify-content: flex-end;';
           const remaskBtn = document.createElement('button');
@@ -1223,44 +1303,49 @@
           remaskBtn.innerHTML = '<span>🔒</span> 重新遮盖 (空格键)';
           remaskBtn.onclick = () => {
             sound.playClick();
-            state.subRevealed = false;
-            renderSubjective();
+            state.gfRevealed = false;
+            renderGoldFree();
           };
           remaskWrap.appendChild(remaskBtn);
           wrap.appendChild(remaskWrap);
 
-          ansContainer.appendChild(wrap);
+          dynamicBody.appendChild(wrap);
         }
       }
 
       // Mastery buttons
-      const btnM = document.getElementById('btnMarkSubMastered');
+      const btnM = document.getElementById('btnGfMarkMastered');
       if (btnM) {
-        if (state.subMastered.has(q.id)) {
+        if (state.mastered.has(q.id)) {
           btnM.classList.add('active');
-          btnM.innerHTML = '<span>✓</span> 已背熟 (点击取消)';
+          btnM.innerHTML = '<span>✓</span> 已掌握 (点击取消)';
         } else {
           btnM.classList.remove('active');
-          btnM.innerHTML = '<span>✓</span> 标记已背熟';
+          btnM.innerHTML = '<span>✓</span> 标记已掌握';
         }
       }
 
-      const btnS = document.getElementById('btnMarkSubStar');
+      const btnS = document.getElementById('btnGfMarkStar');
       if (btnS) {
-        if (state.subStarred.has(q.id)) {
+        if (state.starred.has(q.id)) {
           btnS.classList.add('active');
-          btnS.innerHTML = '<span>★</span> 已加入重点待复背';
+          btnS.innerHTML = '<span>★</span> 已加入重点待复查';
         } else {
           btnS.classList.remove('active');
-          btnS.innerHTML = '<span>★</span> 重点待复背';
+          btnS.innerHTML = '<span>★</span> 重点待复查';
         }
       }
 
-      // Slider
-      const slider = document.getElementById('subSlider');
+      // Slider & Jump
+      const slider = document.getElementById('gfSlider');
       if (slider) {
         slider.max = Math.max(0, list.length - 1);
-        slider.value = state.subIndex;
+        slider.value = state.gfIndex;
+      }
+      const jumpInput = document.getElementById('gfJumpInput');
+      if (jumpInput) {
+        jumpInput.max = list.length;
+        jumpInput.value = state.gfIndex + 1;
       }
     }
 
@@ -1613,7 +1698,7 @@
           if (m === 'flashcard') { document.getElementById('viewFlashcard').classList.add('active'); renderFlashcard(); }
           else if (m === 'quiz') { document.getElementById('viewQuiz').classList.add('active'); renderQuiz(); }
           else if (m === 'variants') { document.getElementById('viewVariants').classList.add('active'); renderVariants(); }
-          else if (m === 'subjective') { document.getElementById('viewSubjective').classList.add('active'); filterSubjective(); }
+          else if (m === 'goldFree') { document.getElementById('viewGoldFree').classList.add('active'); filterGoldFree(); }
           else if (m === 'exam') { document.getElementById('viewExam').classList.add('active'); }
           else if (m === 'notebook') { document.getElementById('viewNotebook').classList.add('active'); renderNotebook(); }
         };
@@ -1660,97 +1745,123 @@
         document.getElementById('outlineDrawer').classList.remove('open');
       };
       document.getElementById('btnSpeakPoint').onclick = speakCurrentPoint;
-      // Subjective Events
-      document.querySelectorAll('#subTypeFilter .pill-btn').forEach(btn => {
+      // Gold Free Practice Events
+      document.querySelectorAll('#gfTypeFilter .pill-btn').forEach(btn => {
         btn.onclick = () => {
           sound.playClick();
-          document.querySelectorAll('#subTypeFilter .pill-btn').forEach(b => b.classList.remove('active'));
+          document.querySelectorAll('#gfTypeFilter .pill-btn').forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
-          state.subFilter = btn.dataset.subtype;
-          filterSubjective();
+          state.gfFilter = btn.dataset.gftype;
+          state.gfIndex = 0;
+          filterGoldFree();
         };
       });
 
-      const draftInput = document.getElementById('subDraftInput');
-      if (draftInput) {
-        draftInput.oninput = (e) => {
-          const list = state.subFiltered;
-          if (list && list[state.subIndex]) {
-            const q = list[state.subIndex];
+      const gfDraftInput = document.getElementById('gfDraftInput');
+      if (gfDraftInput) {
+        gfDraftInput.oninput = (e) => {
+          const list = state.gfFiltered;
+          if (list && list[state.gfIndex]) {
+            const q = list[state.gfIndex];
             state.subDrafts[q.id] = e.target.value;
             if (STORAGE.setSubDrafts) STORAGE.setSubDrafts(state.subDrafts);
-            const tip = document.getElementById('subDraftSaveTip');
+            const tip = document.getElementById('gfDraftSaveTip');
             if (tip) { tip.textContent = '已自动保存 (' + e.target.value.length + ' 字)'; }
           }
         };
       }
 
-      document.getElementById('btnToggleDraft').onclick = () => {
+      document.getElementById('btnGfToggleDraft').onclick = () => {
         sound.playClick();
-        const dArea = document.getElementById('subDraftArea');
+        const dArea = document.getElementById('gfDraftArea');
         if (dArea) {
           dArea.style.display = dArea.style.display === 'none' ? 'block' : 'none';
         }
       };
 
-      document.getElementById('btnPrevSub').onclick = () => {
+      document.getElementById('btnGfPrev').onclick = () => {
         sound.playClick();
-        if (state.subIndex > 0) {
-          state.subIndex--;
-          state.subRevealed = false;
-          renderSubjective();
+        if (state.gfIndex > 0) {
+          state.gfIndex--;
+          state.gfRevealed = false;
+          renderGoldFree();
         }
       };
 
-      document.getElementById('btnNextSub').onclick = () => {
+      document.getElementById('btnGfNext').onclick = () => {
         sound.playClick();
-        if (state.subIndex < state.subFiltered.length - 1) {
-          state.subIndex++;
-          state.subRevealed = false;
-          renderSubjective();
+        if (state.gfIndex < state.gfFiltered.length - 1) {
+          state.gfIndex++;
+          state.gfRevealed = false;
+          renderGoldFree();
         }
       };
 
-      document.getElementById('subSlider').oninput = (e) => {
-        state.subIndex = parseInt(e.target.value, 10);
-        state.subRevealed = false;
-        renderSubjective();
+      document.getElementById('btnGfRandom').onclick = () => {
+        sound.playClick();
+        if (state.gfFiltered && state.gfFiltered.length > 0) {
+          state.gfIndex = Math.floor(Math.random() * state.gfFiltered.length);
+          state.gfRevealed = false;
+          renderGoldFree();
+        }
       };
 
-      document.getElementById('btnMarkSubMastered').onclick = () => {
-        const q = state.subFiltered[state.subIndex];
+      document.getElementById('gfSlider').oninput = (e) => {
+        state.gfIndex = parseInt(e.target.value, 10);
+        state.gfRevealed = false;
+        renderGoldFree();
+      };
+
+      document.getElementById('gfJumpInput').onchange = (e) => {
+        const v = parseInt(e.target.value, 10) - 1;
+        if (v >= 0 && v < state.gfFiltered.length) {
+          state.gfIndex = v;
+          state.gfRevealed = false;
+          renderGoldFree();
+        }
+      };
+
+      document.getElementById('btnGfMarkMastered').onclick = () => {
+        const q = state.gfFiltered[state.gfIndex];
         if (!q) return;
-        if (state.subMastered.has(q.id)) {
-          state.subMastered.delete(q.id);
+        if (state.mastered.has(q.id)) {
+          state.mastered.delete(q.id);
         } else {
           sound.playSuccess();
-          state.subMastered.add(q.id);
+          state.mastered.add(q.id);
         }
-        if (STORAGE.setSubMastered) STORAGE.setSubMastered(Array.from(state.subMastered));
-        renderSubjective();
+        STORAGE.setMastered(Array.from(state.mastered));
+        updateStatsRibbon();
+        renderGoldFree();
       };
 
-      document.getElementById('btnMarkSubStar').onclick = () => {
+      document.getElementById('btnGfMarkStar').onclick = () => {
         sound.playClick();
-        const q = state.subFiltered[state.subIndex];
+        const q = state.gfFiltered[state.gfIndex];
         if (!q) return;
-        if (state.subStarred.has(q.id)) {
-          state.subStarred.delete(q.id);
+        if (state.starred.has(q.id)) {
+          state.starred.delete(q.id);
         } else {
-          state.subStarred.add(q.id);
+          state.starred.add(q.id);
         }
-        if (STORAGE.setSubStarred) STORAGE.setSubStarred(Array.from(state.subStarred));
-        renderSubjective();
+        STORAGE.setStarred(Array.from(state.starred));
+        updateStatsRibbon();
+        renderGoldFree();
       };
 
-      document.getElementById('btnSpeakSubjective').onclick = () => {
+      document.getElementById('btnGfSpeak').onclick = () => {
         if (!('speechSynthesis' in window)) {
           alert('您的浏览器暂不支持语音朗读'); return;
         }
         window.speechSynthesis.cancel();
-        const q = state.subFiltered[state.subIndex];
+        const q = state.gfFiltered[state.gfIndex];
         if (!q) return;
-        const plain = q.stem + '。参考答案：' + q.answer.split('\n').join(' ');
+        let plain = q.stem;
+        if (q.type === 'choice') {
+          plain += '。正确答案为' + q.answerLetter + '。解析：' + q.explanation;
+        } else {
+          plain += '。参考答案：' + q.answer.split('\n').join(' ');
+        }
         const utter = new SpeechSynthesisUtterance(plain);
         utter.lang = 'zh-CN'; utter.rate = 0.95;
         window.speechSynthesis.speak(utter);
@@ -1897,7 +2008,7 @@
       };
       document.getElementById('examNextBtn').onclick = () => {
         sound.playClick();
-        if (state.examCurrentIdx < 29) { state.examCurrentIdx++; renderExamMatrix(); renderExamQuestion(); }
+        if (state.examCurrentIdx < state.examQuestions.length - 1) { state.examCurrentIdx++; renderExamMatrix(); renderExamQuestion(); }
       };
       document.getElementById('examMarkReviewBtn').onclick = () => {
         sound.playClick();
@@ -1952,19 +2063,23 @@
         const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
         if (activeTag === 'input' || activeTag === 'textarea') return;
 
-        if (state.mode === 'subjective') {
+        if (state.mode === 'goldFree') {
+          const list = state.gfFiltered;
+          const q = list && list[state.gfIndex];
           if (e.code === 'ArrowRight') {
-            e.preventDefault(); document.getElementById('btnNextSub').click();
+            e.preventDefault(); document.getElementById('btnGfNext').click();
           } else if (e.code === 'ArrowLeft') {
-            e.preventDefault(); document.getElementById('btnPrevSub').click();
+            e.preventDefault(); document.getElementById('btnGfPrev').click();
           } else if (e.code === 'Space') {
             e.preventDefault();
-            sound.playClick();
-            state.subRevealed = !state.subRevealed;
-            renderSubjective();
+            if (q && (q.type === 'short' || q.type === 'essay')) {
+              sound.playClick();
+              state.gfRevealed = !state.gfRevealed;
+              renderGoldFree();
+            }
           } else if (e.code === 'Enter') {
             e.preventDefault();
-            document.getElementById('btnMarkSubMastered').click();
+            document.getElementById('btnGfMarkMastered').click();
           }
         } else if (state.mode === 'flashcard') {
           if (e.code === 'ArrowRight') {
