@@ -164,6 +164,23 @@
     box-shadow: 0 0 10px var(--accent-glow);
   }
   [data-theme="light"] .blank-btn.revealed-mode { color: #312E81; font-weight: 800; }
+  .title-only-mask-card {
+    text-align: center;
+    padding: 2.8rem 1.5rem;
+    background: rgba(99, 102, 241, 0.05);
+    border: 2px dashed rgba(99, 102, 241, 0.35);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    margin: 0.8rem 0;
+    user-select: none;
+  }
+  .title-only-mask-card:hover {
+    background: rgba(99, 102, 241, 0.1);
+    border-color: var(--accent-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--accent-glow);
+  }
   .flashcard-actions {
     display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
     gap: 0.75rem; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid rgba(255, 255, 255, 0.08);
@@ -727,7 +744,8 @@
       bestScore: STORAGE.getBest(),
 
       // Recitation & Flashcard
-      reciteMode: 'blank', // 'blank' or 'full'
+      reciteMode: 'blank', // 'blank', 'full' or 'titleOnly'
+      titleOnlyRevealed: false,
       fcPart: 0,
       fcSearch: '',
       filteredPoints: [...POINT_DATA],
@@ -790,6 +808,7 @@
       }
       state.filteredPoints = list;
       if (state.fcIndex >= list.length) state.fcIndex = Math.max(0, list.length - 1);
+      state.titleOnlyRevealed = false;
       renderFlashcard();
       renderOutlineDrawer();
     }
@@ -821,7 +840,44 @@
       const contentEl = document.getElementById('fcContent');
       contentEl.innerHTML = '';
 
-      if (state.reciteMode === 'full') {
+      if (state.reciteMode === 'titleOnly') {
+        document.getElementById('fcBlankControls').style.display = 'none';
+        if (!state.titleOnlyRevealed) {
+          const maskBox = document.createElement('div');
+          maskBox.className = 'title-only-mask-card';
+          maskBox.innerHTML = `
+            <div style="font-size: 2.2rem; margin-bottom: 0.75rem;">🔒</div>
+            <div style="font-size: 1.15rem; font-weight: 600; color: var(--accent-primary); margin-bottom: 0.5rem;">考点内容已隐藏 · 请先根据标题默背</div>
+            <div style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1.25rem;">在心中或草稿纸上复述考点核心结论与关键词后点击揭晓</div>
+            <button class="action-btn primary" id="btnRevealTitleOnly" style="padding: 0.55rem 1.5rem; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 0.5rem; margin: 0 auto; pointer-events: none;">
+              <span>👁️</span> 点击揭晓考点全文 (或按空格键)
+            </button>
+          `;
+          maskBox.onclick = () => {
+            sound.playClick();
+            state.titleOnlyRevealed = true;
+            renderFlashcard();
+          };
+          contentEl.appendChild(maskBox);
+        } else {
+          let htmlStr = p.content.replace(/\{\{blank:([^\}]+)\}\}/g, '<mark class="recite-highlight">$1</mark>');
+          contentEl.innerHTML = htmlStr;
+
+          const remaskWrap = document.createElement('div');
+          remaskWrap.style.cssText = 'margin-top: 1.25rem; display: flex; justify-content: flex-end;';
+          const remaskBtn = document.createElement('button');
+          remaskBtn.className = 'action-btn';
+          remaskBtn.style.cssText = 'font-size: 0.85rem; padding: 0.35rem 0.9rem; display: inline-flex; align-items: center; gap: 0.35rem;';
+          remaskBtn.innerHTML = '<span>🔒</span> 重新遮盖 (空格键)';
+          remaskBtn.onclick = () => {
+            sound.playClick();
+            state.titleOnlyRevealed = false;
+            renderFlashcard();
+          };
+          remaskWrap.appendChild(remaskBtn);
+          contentEl.appendChild(remaskWrap);
+        }
+      } else if (state.reciteMode === 'full') {
         // Full Recite Mode: highlight keywords with ruby red
         let htmlStr = p.content.replace(/\{\{blank:([^\}]+)\}\}/g, '<mark class="recite-highlight">$1</mark>');
         contentEl.innerHTML = htmlStr;
@@ -883,6 +939,7 @@
         btn.onclick = () => {
           sound.playClick();
           state.fcIndex = idx;
+          state.titleOnlyRevealed = false;
           renderFlashcard();
           document.getElementById('outlineDrawer').classList.remove('open');
         };
@@ -1185,21 +1242,38 @@
         };
       });
 
-      // Recitation vs Blank Toggle
+      // Recitation vs Blank vs TitleOnly Toggle
+      const updateReciteModeButtons = () => {
+        const bBlank = document.getElementById('btnModeBlank');
+        const bFull = document.getElementById('btnModeFull');
+        const bTitle = document.getElementById('btnModeTitleOnly');
+        if (bBlank) bBlank.classList.toggle('active', state.reciteMode === 'blank');
+        if (bFull) bFull.classList.toggle('active', state.reciteMode === 'full');
+        if (bTitle) bTitle.classList.toggle('active', state.reciteMode === 'titleOnly');
+      };
+
       document.getElementById('btnModeBlank').onclick = () => {
         sound.playClick();
         state.reciteMode = 'blank';
-        document.getElementById('btnModeBlank').classList.add('active');
-        document.getElementById('btnModeFull').classList.remove('active');
+        updateReciteModeButtons();
         renderFlashcard();
       };
       document.getElementById('btnModeFull').onclick = () => {
         sound.playClick();
         state.reciteMode = 'full';
-        document.getElementById('btnModeFull').classList.add('active');
-        document.getElementById('btnModeBlank').classList.remove('active');
+        updateReciteModeButtons();
         renderFlashcard();
       };
+      const btnTitleOnly = document.getElementById('btnModeTitleOnly');
+      if (btnTitleOnly) {
+        btnTitleOnly.onclick = () => {
+          sound.playClick();
+          state.reciteMode = 'titleOnly';
+          state.titleOnlyRevealed = false;
+          updateReciteModeButtons();
+          renderFlashcard();
+        };
+      }
 
       // Drawer & TTS
       document.getElementById('btnToggleDrawer').onclick = () => {
@@ -1240,22 +1314,38 @@
       };
       document.getElementById('btnNextCard').onclick = () => {
         sound.playClick();
-        if (state.fcIndex < state.filteredPoints.length - 1) { state.fcIndex++; renderFlashcard(); }
+        if (state.fcIndex < state.filteredPoints.length - 1) {
+          state.fcIndex++;
+          state.titleOnlyRevealed = false;
+          renderFlashcard();
+        }
       };
       document.getElementById('btnPrevCard').onclick = () => {
         sound.playClick();
-        if (state.fcIndex > 0) { state.fcIndex--; renderFlashcard(); }
+        if (state.fcIndex > 0) {
+          state.fcIndex--;
+          state.titleOnlyRevealed = false;
+          renderFlashcard();
+        }
       };
       document.getElementById('btnRandomCard').onclick = () => {
         sound.playClick();
-        state.fcIndex = Math.floor(Math.random() * state.filteredPoints.length); renderFlashcard();
+        state.fcIndex = Math.floor(Math.random() * state.filteredPoints.length);
+        state.titleOnlyRevealed = false;
+        renderFlashcard();
       };
       document.getElementById('fcSlider').oninput = (e) => {
-        state.fcIndex = parseInt(e.target.value, 10); renderFlashcard();
+        state.fcIndex = parseInt(e.target.value, 10);
+        state.titleOnlyRevealed = false;
+        renderFlashcard();
       };
       document.getElementById('fcJumpInput').onchange = (e) => {
         const v = parseInt(e.target.value, 10) - 1;
-        if (v >= 0 && v < state.filteredPoints.length) { state.fcIndex = v; renderFlashcard(); }
+        if (v >= 0 && v < state.filteredPoints.length) {
+          state.fcIndex = v;
+          state.titleOnlyRevealed = false;
+          renderFlashcard();
+        }
       };
       document.querySelectorAll('#fcPartFilter .pill-btn').forEach(btn => {
         btn.onclick = () => {
@@ -1379,6 +1469,34 @@
           renderNotebook();
         };
       });
+            // Keyboard Shortcuts for Flashcards
+      window.addEventListener('keydown', (e) => {
+        const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+        if (activeTag === 'input' || activeTag === 'textarea') return;
+
+        if (state.mode === 'flashcard') {
+          if (e.code === 'ArrowRight') {
+            e.preventDefault();
+            document.getElementById('btnNextCard').click();
+          } else if (e.code === 'ArrowLeft') {
+            e.preventDefault();
+            document.getElementById('btnPrevCard').click();
+          } else if (e.code === 'Space') {
+            e.preventDefault();
+            if (state.reciteMode === 'titleOnly') {
+              sound.playClick();
+              state.titleOnlyRevealed = !state.titleOnlyRevealed;
+              renderFlashcard();
+            } else if (state.reciteMode === 'blank') {
+              document.getElementById('btnRevealAll').click();
+            }
+          } else if (e.code === 'Enter') {
+            e.preventDefault();
+            document.getElementById('btnMarkMastered').click();
+          }
+        }
+      });
+
       document.getElementById('clearNbBtn').onclick = () => {
         if (!confirm('清空当前记录？')) return;
         if (currentNbTab === 'wrong') { state.wrong.clear(); STORAGE.setWrong([]); }
@@ -1403,7 +1521,3 @@
   </script>
 </body>
 </html>
-`;
-
-fs.writeFileSync('index.html', part1Html + clientJs, 'utf8');
-console.log('SUCCESS: index.html generated completely!');
