@@ -523,6 +523,7 @@
             <button class="pill-btn" id="btnModeFull" title="全文通读，朱红加粗高亮重点词">📖 全文背诵</button>
             <button class="pill-btn" id="btnModeTitleOnly" title="仅显示考点标题，根据标题默背结果后点击揭晓">🏷️ 仅显标题 (见题默背)</button>
           </div>
+          <button class="action-btn" id="btnResetFlashcard" title="重置当前考点背诵进度至第1题" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;">🔄 重置进度</button>
           <button class="action-btn" id="btnToggleDrawer" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;">
             📑 考点目录
           </button>
@@ -604,6 +605,7 @@
         </div>
         <div style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; color: var(--text-sub);">
           <span>当前第 <strong id="quizProgressNum" style="color: var(--accent-primary); font-size: 0.95rem;">1</strong> / <span id="quizTotalNum">354</span> 题</span>
+          <button class="action-btn" id="btnResetQuiz" title="清空答题记录，重置回第1题" style="padding: 0.25rem 0.6rem; font-size: 0.78rem;">🔄 重置进度</button>
           <span style="opacity: 0.4;">|</span>
           <span>跳转题号:</span>
           <input type="number" id="quizJumpInput" min="1" max="354" value="1" style="width: 55px; text-align: center; background: rgba(0,0,0,0.2); border: 1px solid var(--card-border); border-radius: 6px; padding: 0.2rem 0.4rem; color: var(--text-main); outline: none;">
@@ -646,6 +648,7 @@
           <span style="opacity: 0.4;">|</span>
           <span>跳转考点:</span>
           <input type="number" id="varJumpInput" min="1" max="219" value="1" style="width: 55px; text-align: center; background: rgba(0,0,0,0.2); border: 1px solid var(--card-border); border-radius: 6px; padding: 0.2rem 0.4rem; color: var(--text-main); outline: none;">
+          <button class="action-btn" id="btnResetVariants" title="重置变式题进度至第1考点" style="padding: 0.25rem 0.6rem; font-size: 0.78rem;">🔄 重置进度</button>
         </div>
       </div>
 
@@ -692,6 +695,9 @@
           </button>
           <button class="action-btn" id="btnGfToggleDraft" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;">
             ✏️ 作答草稿纸
+          </button>
+          <button class="action-btn" id="btnResetGoldFree" title="清空答题与评分，重置回第1题" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;">
+            🔄 重置进度
           </button>
         </div>
       </div>
@@ -764,6 +770,9 @@
           </button>
           <button class="action-btn" id="btnJdToggleList" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;">
             📑 题目目录
+          </button>
+          <button class="action-btn" id="btnResetJianda" title="重置简答题背诵进度至第1题" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;">
+            🔄 重置进度
           </button>
         </div>
       </div>
@@ -2200,43 +2209,78 @@ const VARIANTS_DATA = [{"pointId":1,"part":1,"num":1,"pointTitle":"世界观的�
         const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
         if (activeTag === 'input' || activeTag === 'textarea') return;
 
-        if (state.mode === 'goldFree') {
-          const list = state.gfFiltered;
-          const q = list && list[state.gfIndex];
-          if (e.code === 'ArrowRight') {
-            e.preventDefault(); document.getElementById('btnGfNext').click();
-          } else if (e.code === 'ArrowLeft') {
-            e.preventDefault(); document.getElementById('btnGfPrev').click();
-          } else if (e.code === 'Space') {
-            e.preventDefault();
-            if (q && (q.type === 'short' || q.type === 'essay')) {
-              sound.playClick();
-              state.gfRevealed = !state.gfRevealed;
-              renderGoldFree();
-            }
-          } else if (e.code === 'Enter') {
-            e.preventDefault();
-            document.getElementById('btnGfMarkMastered').click();
+        // --- ARROW LEFT (PREVIOUS QUESTION IN ALL MODULES) ---
+        if (e.code === 'ArrowLeft') {
+          e.preventDefault();
+          if (state.mode === 'flashcard') {
+            const b = document.getElementById('btnPrevCard'); if (b) b.click();
+          } else if (state.mode === 'quiz') {
+            const b = document.getElementById('quizPrevBtn'); if (b) b.click();
+          } else if (state.mode === 'variants') {
+            const b = document.getElementById('varPrevPointBtn'); if (b) b.click();
+          } else if (state.mode === 'goldFree') {
+            const b = document.getElementById('btnGfPrev'); if (b) b.click();
+          } else if (state.mode === 'jianda') {
+            const b = document.getElementById('btnJdPrev'); if (b) b.click();
+          } else if (state.mode === 'exam') {
+            const b = document.getElementById('examPrevBtn'); if (b) b.click();
           }
-        } else if (state.mode === 'flashcard') {
-          if (e.code === 'ArrowRight') {
-            e.preventDefault();
-            document.getElementById('btnNextCard').click();
-          } else if (e.code === 'ArrowLeft') {
-            e.preventDefault();
-            document.getElementById('btnPrevCard').click();
-          } else if (e.code === 'Space') {
+        }
+        // --- ARROW RIGHT (NEXT QUESTION IN ALL MODULES) ---
+        else if (e.code === 'ArrowRight') {
+          e.preventDefault();
+          if (state.mode === 'flashcard') {
+            const b = document.getElementById('btnNextCard'); if (b) b.click();
+          } else if (state.mode === 'quiz') {
+            const b = document.getElementById('quizNextBtn'); if (b) b.click();
+          } else if (state.mode === 'variants') {
+            const b = document.getElementById('varNextPointBtn'); if (b) b.click();
+          } else if (state.mode === 'goldFree') {
+            const b = document.getElementById('btnGfNext'); if (b) b.click();
+          } else if (state.mode === 'jianda') {
+            const b = document.getElementById('btnJdNext'); if (b) b.click();
+          } else if (state.mode === 'exam') {
+            const b = document.getElementById('examNextBtn'); if (b) b.click();
+          }
+        }
+        // --- SPACE (REVEAL / TOGGLE IN RECITATION MODULES) ---
+        else if (e.code === 'Space') {
+          if (state.mode === 'flashcard') {
             e.preventDefault();
             if (state.reciteMode === 'titleOnly') {
               sound.playClick();
               state.titleOnlyRevealed = !state.titleOnlyRevealed;
               renderFlashcard();
             } else if (state.reciteMode === 'blank') {
-              document.getElementById('btnRevealAll').click();
+              const b = document.getElementById('btnRevealAll'); if (b) b.click();
             }
-          } else if (e.code === 'Enter') {
+          } else if (state.mode === 'goldFree') {
+            const list = state.gfFiltered;
+            const q = list && list[state.gfIndex];
+            if (q && (q.type === 'short' || q.type === 'essay')) {
+              e.preventDefault();
+              sound.playClick();
+              state.gfRevealed = !state.gfRevealed;
+              renderGoldFree();
+            }
+          } else if (state.mode === 'jianda') {
             e.preventDefault();
-            document.getElementById('btnMarkMastered').click();
+            sound.playClick();
+            jdRevealed = !jdRevealed;
+            renderJianda();
+          }
+        }
+        // --- ENTER (MARK MASTERED) ---
+        else if (e.code === 'Enter') {
+          if (state.mode === 'flashcard') {
+            e.preventDefault();
+            const b = document.getElementById('btnMarkMastered'); if (b) b.click();
+          } else if (state.mode === 'goldFree') {
+            e.preventDefault();
+            const b = document.getElementById('btnGfMarkMastered'); if (b) b.click();
+          } else if (state.mode === 'jianda') {
+            e.preventDefault();
+            const b = document.getElementById('btnJdMasterToggle'); if (b) b.click();
           }
         }
       });
