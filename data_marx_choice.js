@@ -9365,3 +9365,7 @@ const MARX_CHOICE_DATA = [
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = MARX_CHOICE_DATA;
 }
+
+if (typeof window !== 'undefined') {
+  window.MARX_CHOICE_DATA = MARX_CHOICE_DATA;
+}
