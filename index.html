@@ -385,6 +385,8 @@
   }
   .q-matrix-btn.current { border-color: var(--accent-primary); background: rgba(99, 102, 241, 0.2); color: #FFF; }
   .q-matrix-btn.answered { background: var(--accent-primary); border-color: var(--accent-primary); color: #FFF; }
+  .q-matrix-btn.matrix-correct { background: var(--success) !important; border-color: var(--success) !important; color: #FFF !important; }
+  .q-matrix-btn.matrix-wrong { background: var(--danger) !important; border-color: var(--danger) !important; color: #FFF !important; }
 
   /* Modal */
   .modal-overlay {
@@ -1231,10 +1233,14 @@
         <div class="quiz-card">
           <div class="quiz-header">
             <span class="flashcard-tag-badge" id="examCatBadge">第 1 题</span>
-            <span style="font-size: 0.85rem; color: var(--text-sub);">单选 · 满分 100 分制</span>
+            <span style="font-size: 0.85rem; color: var(--text-sub);" id="examStatusText">单选 · 满分 150 分制</span>
           </div>
           <div class="quiz-stem" id="examStem">题目加载中...</div>
           <div class="options-grid" id="examOptionsList"></div>
+          <div class="explain-card" id="examExplainCard">
+            <div class="explain-title">💡 权威考点深度解析</div>
+            <div class="explain-body" id="examExplainText"></div>
+          </div>
           <div class="quiz-nav-footer">
             <button class="action-btn" id="examPrevBtn">← 上一题</button>
             <button class="action-btn" id="examBottomMarkBtn">🚩 标记复查</button>
@@ -1826,16 +1832,40 @@
 
     function renderExamMatrix() {
       const matrix = document.getElementById('examMatrix');
+      if (!matrix) return;
       matrix.innerHTML = '';
-      state.examQuestions.forEach((q, idx) => {
+      state.examQuestions.forEach(function(q, idx) {
         const btn = document.createElement('button');
         btn.className = 'q-matrix-btn';
         if (idx === state.examCurrentIdx) btn.classList.add('current');
-        const isAns = (state.examAnswers[idx] !== undefined) || (state.examSubjectiveAnswers && state.examSubjectiveAnswers[idx] && state.examSubjectiveAnswers[idx].trim().length > 0);
-        if (isAns) btn.classList.add('answered');
-        if (state.examMarked.has(idx)) btn.style.borderColor = '#F59E0B';
+
+        const isSub = q.isSubjective || q.type === 'short' || q.type === 'essay';
+        if (!isSub) {
+          if (state.examAnswers[idx] !== undefined) {
+            if (state.examAnswers[idx] === q.answer) {
+              btn.classList.add('matrix-correct');
+            } else {
+              btn.classList.add('matrix-wrong');
+            }
+          }
+        } else {
+          const subAns = state.examSubjectiveAnswers && state.examSubjectiveAnswers[idx];
+          if (subAns && subAns.trim().length > 0) {
+            btn.classList.add('answered');
+          }
+        }
+
+        if (state.examMarked.has(idx)) {
+          btn.style.borderColor = '#F59E0B';
+          btn.style.boxShadow = '0 0 0 2px rgba(245, 158, 11, 0.4)';
+        }
         btn.textContent = idx + 1;
-        btn.onclick = () => { sound.playClick(); state.examCurrentIdx = idx; renderExamMatrix(); renderExamQuestion(); };
+        btn.onclick = function() {
+          sound.playClick();
+          state.examCurrentIdx = idx;
+          renderExamMatrix();
+          renderExamQuestion();
+        };
         matrix.appendChild(btn);
       });
     }
@@ -1843,42 +1873,111 @@
     function renderExamQuestion() {
       if (window.innerWidth <= 768) { window.scrollTo({ top: 0, behavior: 'smooth' }); }
       const q = state.examQuestions[state.examCurrentIdx];
+      if (!q) return;
       const isSub = q.isSubjective || q.type === 'short' || q.type === 'essay';
-      document.getElementById('examCatBadge').textContent = '第 ' + (state.examCurrentIdx + 1) + ' / ' + state.examQuestions.length + ' 题 · ' + q.category;
-      document.getElementById('examStem').textContent = (state.examCurrentIdx + 1) + '. ' + q.question;
+      const catBadge = document.getElementById('examCatBadge');
+      if (catBadge) {
+        catBadge.textContent = '第 ' + (state.examCurrentIdx + 1) + ' / ' + state.examQuestions.length + ' 题 · ' + q.category;
+      }
+      const stemEl = document.getElementById('examStem');
+      if (stemEl) {
+        stemEl.textContent = (state.examCurrentIdx + 1) + '. ' + q.question;
+      }
+      const statusEl = document.getElementById('examStatusText');
+      const expCard = document.getElementById('examExplainCard');
+      const expText = document.getElementById('examExplainText');
       const optsList = document.getElementById('examOptionsList');
+      if (!optsList) return;
       optsList.innerHTML = '';
+
+      const userAns = state.examAnswers[state.examCurrentIdx];
 
       if (!isSub) {
         const letters = ['A', 'B', 'C', 'D'];
-        q.options.forEach((optText, optIdx) => {
+        if (expText) {
+          expText.textContent = q.explanation || ('【标准答案：' + (q.answerLetter || letters[q.answer]) + '】');
+        }
+
+        if (userAns !== undefined) {
+          if (userAns === q.answer) {
+            if (statusEl) statusEl.textContent = '✅ 回答正确';
+          } else {
+            if (statusEl) statusEl.textContent = '❌ 作答错误 · 正确答案: ' + (q.answerLetter || letters[q.answer]);
+          }
+          if (expCard) expCard.classList.add('active');
+        } else {
+          if (statusEl) statusEl.textContent = '单选题 (2分) · 未作答';
+          if (expCard) expCard.classList.remove('active');
+        }
+
+        q.options.forEach(function(optText, optIdx) {
           const div = document.createElement('div');
           div.className = 'option-item';
-          if (state.examAnswers[state.examCurrentIdx] === optIdx) div.classList.add('correct');
           div.innerHTML = '<div class="option-letter">' + letters[optIdx] + '</div><div class="option-text">' + optText + '</div>';
-          div.onclick = () => {
-            sound.playClick();
+
+          if (userAns !== undefined) {
+            div.classList.add('disabled');
+            if (optIdx === q.answer) {
+              div.classList.add('correct');
+            } else if (optIdx === userAns) {
+              div.classList.add('wrong');
+            }
+          }
+
+          div.onclick = function() {
+            if (state.examAnswers[state.examCurrentIdx] !== undefined) return;
             state.examAnswers[state.examCurrentIdx] = optIdx;
-            renderExamMatrix(); renderExamQuestion();
+            if (optIdx === q.answer) {
+              sound.playSuccess();
+            } else {
+              sound.playWrong();
+              state.wrong.add(q.id);
+              STORAGE.setWrong(Array.from(state.wrong));
+              updateStatsRibbon();
+            }
+            renderExamMatrix();
+            renderExamQuestion();
           };
           optsList.appendChild(div);
         });
       } else {
+        if (expCard) expCard.classList.remove('active');
+        if (statusEl) statusEl.textContent = '主观大题 (满分 ' + q.score + ' 分)';
+
         const box = document.createElement('div');
         box.className = 'exam-subjective-box';
-        box.innerHTML = `
-          <div style="font-size: 0.88rem; font-weight: 600; color: var(--accent-primary); margin-bottom: 0.35rem;">
-            📝 主观大题作答区（满分 ${q.score} 分 · 交卷后与官方采分要点对照）：
-          </div>
-          <textarea id="examSubjectiveInput" class="exam-subjective-textarea" placeholder="请在此处输入您的作答内容，分条陈述观点..."></textarea>
-        `;
+        box.innerHTML = '<div style="font-size: 0.88rem; font-weight: 600; color: var(--accent-primary); margin-bottom: 0.35rem;">' +
+          '📝 主观大题作答区（满分 ' + q.score + ' 分 · 可随时查看官方标准采分点）：' +
+          '</div>' +
+          '<textarea id="examSubjectiveInput" class="exam-subjective-textarea" placeholder="请在此处输入您的作答思路或分条陈述观点..."></textarea>' +
+          '<div style="margin-top: 0.85rem; display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">' +
+          '<button class="action-btn" id="btnToggleSubModelAnswer" style="padding: 0.4rem 0.9rem; font-size: 0.82rem; border-color: var(--accent-primary); color: var(--accent-primary); font-weight: 600;">' +
+          '💡 查看官方标准采分点与参考答案' +
+          '</button>' +
+          '</div>' +
+          '<div class="explain-card" id="examSubModelCard" style="display: none; margin-top: 0.85rem;">' +
+          '<div class="explain-title">📋 官方参考答案与采分规范：</div>' +
+          '<div class="explain-body" style="white-space: pre-wrap; font-size: 0.88rem; line-height: 1.65;">' + (q.answer || q.explanation || '详见解析') + '</div>' +
+          '</div>';
         optsList.appendChild(box);
+
         const txt = box.querySelector('#examSubjectiveInput');
         if (txt) {
           txt.value = state.examSubjectiveAnswers[state.examCurrentIdx] || '';
-          txt.oninput = (e) => {
+          txt.oninput = function(e) {
             state.examSubjectiveAnswers[state.examCurrentIdx] = e.target.value;
             renderExamMatrix();
+          };
+        }
+
+        const toggleBtn = box.querySelector('#btnToggleSubModelAnswer');
+        const modelCard = box.querySelector('#examSubModelCard');
+        if (toggleBtn && modelCard) {
+          toggleBtn.onclick = function() {
+            sound.playClick();
+            const isHidden = modelCard.style.display === 'none';
+            modelCard.style.display = isHidden ? 'block' : 'none';
+            toggleBtn.textContent = isHidden ? '🙈 收起标准答案' : '💡 查看官方标准采分点与参考答案';
           };
         }
       }
@@ -1892,10 +1991,12 @@
         }
       }
       const markBtn = document.getElementById('examMarkReviewBtn');
-      if (state.examMarked.has(state.examCurrentIdx)) {
-        markBtn.classList.add('warning'); markBtn.textContent = '🚩 已标记复查';
-      } else {
-        markBtn.classList.remove('warning'); markBtn.textContent = '🚩 标记本题待复查';
+      if (markBtn) {
+        if (state.examMarked.has(state.examCurrentIdx)) {
+          markBtn.classList.add('warning'); markBtn.textContent = '🚩 已标记复查';
+        } else {
+          markBtn.classList.remove('warning'); markBtn.textContent = '🚩 标记本题待复查';
+        }
       }
     }
 
