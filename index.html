@@ -683,7 +683,7 @@
         <span>🏆</span> 黄金模考·自由做题 (41题)
       </button>
       <button class="nav-btn" data-mode="jianda">
-        <span>📋</span> 必背简答 (32题)
+        <span>📋</span> 必背简答 (33题)
       </button>
       <button class="nav-btn" data-mode="exam">
         <span>⏱️</span> 历年真题与预测模考 (8套卷)
@@ -979,10 +979,9 @@
     <section class="mode-view" id="viewJianda">
       <div class="control-panel">
         <div class="pill-group" id="jdCatFilter">
-          <button class="pill-btn active" data-jdcat="all">全部 (32题)</button>
-          <button class="pill-btn" data-jdcat="phil">马哲原理 (1~15题)</button>
-          <button class="pill-btn" data-jdcat="mao">毛概与特色 (16~22题)</button>
-          <button class="pill-btn" data-jdcat="deng">邓论与初级阶段 (23~32题)</button>
+          <button class="pill-btn active" data-jdcat="all">全部 (33题)</button>
+          <button class="pill-btn" data-jdcat="core" style="color: #f59e0b; font-weight: 700;">🔥 考前核心重点 (前16题)</button>
+          <button class="pill-btn" data-jdcat="extra">📘 拓展高频必背 (17~33题)</button>
         </div>
 
         <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
@@ -1008,22 +1007,22 @@
       <!-- 背诵进度条与快捷直达 -->
       <div class="jd-progress-bar" style="margin: 0.75rem 0; padding: 0.6rem 1rem; background: var(--card-bg, #fff); border-radius: 8px; border: 1px solid var(--border-color, #e2e8f0); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
         <div style="display: flex; align-items: center; gap: 0.75rem;">
-          <span style="font-weight: 600; font-size: 0.88rem;">背诵进度：<span id="jdMasteredCount" style="color: #10b981;">0</span> / <span id="jdTotalCount">32</span> 题 (<span id="jdMasteredRate">0%</span>)</span>
+          <span style="font-weight: 600; font-size: 0.88rem;">背诵进度：<span id="jdMasteredCount" style="color: #10b981;">0</span> / <span id="jdTotalCount">33</span> 题 (<span id="jdMasteredRate">0%</span>)</span>
           <div style="width: 120px; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
             <div id="jdProgressBarFill" style="width: 0%; height: 100%; background: #10b981; transition: width 0.3s;"></div>
           </div>
         </div>
         <div style="display: flex; gap: 0.5rem; align-items: center;">
           <span style="font-size: 0.82rem; color: #64748b;">直达题号：</span>
-          <input type="number" id="jdJumpInput" min="1" max="32" placeholder="1-32" style="width: 65px; padding: 0.25rem 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem;">
+          <input type="number" id="jdJumpInput" min="1" max="33" placeholder="1-33" style="width: 65px; padding: 0.25rem 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem;">
           <button class="action-btn" id="btnJdJump" style="padding: 0.25rem 0.6rem; font-size: 0.8rem;">跳转</button>
         </div>
       </div>
 
-      <!-- 32题目录列表抽屉 -->
+      <!-- 33题目录列表抽屉 -->
       <div id="jdListDrawer" style="display: none; margin-bottom: 0.75rem; background: var(--card-bg, #fff); border: 1px solid var(--border-color, #e2e8f0); border-radius: 8px; padding: 1rem; max-height: 280px; overflow-y: auto;">
         <div style="font-weight: 600; margin-bottom: 0.5rem; display: flex; justify-content: space-between;">
-          <span>📋 32道必背简答题目速览</span>
+          <span>📋 33道高频简答题目速览</span>
           <span style="font-size: 0.8rem; color: #64748b; cursor: pointer;" id="btnCloseJdDrawer">✕ 关闭目录</span>
         </div>
         <div id="jdListItems" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0.5rem;"></div>
@@ -3174,12 +3173,10 @@
     function filterJianda(cat) {
       if (!cat || cat === 'all') {
         jdCurrentList = JIANDA_32_DATA.slice();
-      } else if (cat === 'phil') {
-        jdCurrentList = JIANDA_32_DATA.filter(function(q) { return q.num <= 15; });
-      } else if (cat === 'mao') {
-        jdCurrentList = JIANDA_32_DATA.filter(function(q) { return q.num >= 16 && q.num <= 22; });
-      } else if (cat === 'deng') {
-        jdCurrentList = JIANDA_32_DATA.filter(function(q) { return q.num >= 23; });
+      } else if (cat === 'core') {
+        jdCurrentList = JIANDA_32_DATA.filter(function(q) { return q.isCore || q.num <= 16; });
+      } else if (cat === 'extra') {
+        jdCurrentList = JIANDA_32_DATA.filter(function(q) { return !q.isCore && q.num > 16; });
       }
       jdCurrentIdx = 0;
       jdRevealed = false;
@@ -3195,10 +3192,12 @@
         }
       }
       const elCount = document.getElementById('jdMasteredCount');
+      const elTotal = document.getElementById('jdTotalCount');
       const elFill = document.getElementById('jdProgressBarFill');
       const elRate = document.getElementById('jdMasteredRate');
       if (elCount) elCount.textContent = count;
-      const rate = Math.round((count / total) * 100);
+      if (elTotal) elTotal.textContent = total;
+      const rate = total > 0 ? Math.round((count / total) * 100) : 0;
       if (elRate) elRate.textContent = rate + '%';
       if (elFill) elFill.style.width = rate + '%';
     }
@@ -3218,6 +3217,7 @@
 
       const q = jdCurrentList[jdCurrentIdx];
       const isMastered = jdMastered.indexOf(q.id) >= 0;
+      const isCore = q.isCore || q.num <= 16;
       const btnMaster = document.getElementById('btnJdMasterToggle');
       if (btnMaster) {
         if (isMastered) {
@@ -3250,15 +3250,20 @@
           '</div>' + renderedPoints + '</div>';
       }
 
+      const catBadge = isCore
+        ? '<span style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; font-size: 0.75rem; font-weight: 700; padding: 0.25rem 0.65rem; border-radius: 4px; box-shadow: 0 1px 3px rgba(245,158,11,0.3);">🔥 考前核心重点 (重中之重)</span>'
+        : '<span style="background: #e0f2fe; color: #0284c7; font-size: 0.75rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 4px;">📘 拓展高频必背</span>';
+
       card.innerHTML = '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">' +
         '<div style="display: flex; align-items: center; gap: 0.5rem;">' +
-        '<span style="background: #e0f2fe; color: #0284c7; font-size: 0.75rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 4px;">' + q.category + '</span>' +
+        catBadge +
         '<span style="color: #64748b; font-size: 0.85rem; font-weight: 600;">第 ' + (jdCurrentIdx + 1) + ' / ' + jdCurrentList.length + ' 题（总第' + q.num + '题）</span>' +
         '</div>' +
         (isMastered ? '<span style="color: #10b981; font-weight: 700; font-size: 0.85rem;">已掌握 ⭐</span>' : '<span style="color: #94a3b8; font-size: 0.82rem;">待背诵</span>') +
         '</div>' +
         '<h2 style="font-size: 1.25rem; font-weight: 700; line-height: 1.5; color: var(--text-color, #1e293b); margin-bottom: 0.75rem;">' +
-        '【第 ' + q.num + ' 题】' + q.title + '</h2>' +
+        (isCore ? '<span style="color: #ea580c; margin-right: 0.35rem;">[重点 ' + q.num + ']</span>' : '<span style="color: #475569; margin-right: 0.35rem;">[第 ' + q.num + ' 题]</span>') +
+        q.title + '</h2>' +
         pointsHtml;
 
       renderJdListDrawer();
@@ -3280,11 +3285,17 @@
       container.innerHTML = JIANDA_32_DATA.map(function(item, idx) {
         const isM = jdMastered.indexOf(item.id) >= 0;
         const isCurrent = jdCurrentList[jdCurrentIdx] && jdCurrentList[jdCurrentIdx].id === item.id;
-        let borderStyle = isCurrent ? 'border: 2px solid #6366f1; background: #eef2ff;' : 'border: 1px solid #e2e8f0; background: var(--card-bg, #fff);';
+        const isCore = item.isCore || item.num <= 16;
+        let borderStyle = isCurrent 
+          ? 'border: 2px solid #6366f1; background: #eef2ff;' 
+          : (isCore ? 'border: 1px solid #fed7aa; background: #fffbf5;' : 'border: 1px solid #e2e8f0; background: var(--card-bg, #fff);');
+        let badge = isCore 
+          ? '<span style="color: #d97706; font-weight: 700; font-size: 0.75rem; background: #fef3c7; padding: 0.1rem 0.4rem; border-radius: 3px;">🔥 核心重点</span>' 
+          : '<span style="font-size: 0.75rem; color: #64748b; background: #f1f5f9; padding: 0.1rem 0.4rem; border-radius: 3px;">📘 拓展</span>';
         return '<div style="padding: 0.5rem 0.75rem; border-radius: 6px; font-size: 0.85rem; cursor: pointer; ' + borderStyle + '" onclick="selectJdById(' + item.id + ')">' +
-          '<div style="font-weight: 600; display: flex; justify-content: space-between;">' +
+          '<div style="font-weight: 600; display: flex; justify-content: space-between; align-items: center;">' +
           '<span>第 ' + item.num + ' 题 ' + (isM ? '⭐' : '') + '</span>' +
-          '<span style="font-size: 0.75rem; color: #64748b;">' + item.category.slice(0, 4) + '</span>' +
+          badge +
           '</div>' +
           '<div style="color: #475569; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 0.2rem;">' + item.title + '</div>' +
           '</div>';
@@ -3449,11 +3460,12 @@
       if (btnJump && inputJump) {
         btnJump.onclick = function() {
           const num = parseInt(inputJump.value, 10);
-          if (num >= 1 && num <= 32) {
+          const maxNum = JIANDA_32_DATA.length;
+          if (num >= 1 && num <= maxNum) {
             selectJdById(num);
             inputJump.value = '';
           } else {
-            alert('请输入 1 至 32 之间的有效题号');
+            alert('请输入 1 至 ' + maxNum + ' 之间的有效题号');
           }
         };
         inputJump.onkeydown = function(e) {
