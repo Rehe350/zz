@@ -683,7 +683,7 @@
         <span>🏆</span> 黄金模考·自由做题 (41题)
       </button>
       <button class="nav-btn" data-mode="jianda">
-        <span>📋</span> 必背简答 (33题)
+        <span>📋</span> 必背简答 (快速/全解)
       </button>
       <button class="nav-btn" data-mode="exam">
         <span>⏱️</span> 历年真题与预测模考 (8套卷)
@@ -978,10 +978,19 @@
 
     <section class="mode-view" id="viewJianda">
       <div class="control-panel">
+        <!-- 必背简答双版本切换：快速记忆精练版 vs 官方标准详答版 -->
+        <div style="display: flex; gap: 0.5rem; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; flex-wrap: wrap;">
+          <div class="pill-group" id="jdVersionToggle">
+            <button class="pill-btn active" data-jdver="fast" style="font-weight: 700; color: #4f46e5;">⚡ 快速记忆精练版 (32题·极速背诵)</button>
+            <button class="pill-btn" data-jdver="full">📖 官方标准详答版 (33题·采分全解)</button>
+          </div>
+          <span id="jdVersionTip" style="font-size: 0.8rem; color: #64748b; font-weight: 500;">🎯 答案以 ①②③ 分条排列，直击核心提纲关键词！</span>
+        </div>
+
         <div class="pill-group" id="jdCatFilter">
-          <button class="pill-btn active" data-jdcat="all">全部 (33题)</button>
+          <button class="pill-btn active" data-jdcat="all">全部 (32题)</button>
           <button class="pill-btn" data-jdcat="core" style="color: #f59e0b; font-weight: 700;">🔥 考前核心重点 (前16题)</button>
-          <button class="pill-btn" data-jdcat="extra">📘 拓展高频必背 (17~33题)</button>
+          <button class="pill-btn" data-jdcat="extra">📘 拓展必背 (17~32题)</button>
         </div>
 
         <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
@@ -1007,22 +1016,22 @@
       <!-- 背诵进度条与快捷直达 -->
       <div class="jd-progress-bar" style="margin: 0.75rem 0; padding: 0.6rem 1rem; background: var(--card-bg, #fff); border-radius: 8px; border: 1px solid var(--border-color, #e2e8f0); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
         <div style="display: flex; align-items: center; gap: 0.75rem;">
-          <span style="font-weight: 600; font-size: 0.88rem;">背诵进度：<span id="jdMasteredCount" style="color: #10b981;">0</span> / <span id="jdTotalCount">33</span> 题 (<span id="jdMasteredRate">0%</span>)</span>
+          <span style="font-weight: 600; font-size: 0.88rem;">背诵进度：<span id="jdMasteredCount" style="color: #10b981;">0</span> / <span id="jdTotalCount">32</span> 题 (<span id="jdMasteredRate">0%</span>)</span>
           <div style="width: 120px; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
             <div id="jdProgressBarFill" style="width: 0%; height: 100%; background: #10b981; transition: width 0.3s;"></div>
           </div>
         </div>
         <div style="display: flex; gap: 0.5rem; align-items: center;">
           <span style="font-size: 0.82rem; color: #64748b;">直达题号：</span>
-          <input type="number" id="jdJumpInput" min="1" max="33" placeholder="1-33" style="width: 65px; padding: 0.25rem 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem;">
+          <input type="number" id="jdJumpInput" min="1" max="32" placeholder="1-32" style="width: 65px; padding: 0.25rem 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem;">
           <button class="action-btn" id="btnJdJump" style="padding: 0.25rem 0.6rem; font-size: 0.8rem;">跳转</button>
         </div>
       </div>
 
-      <!-- 33题目录列表抽屉 -->
+      <!-- 题目目录列表抽屉 -->
       <div id="jdListDrawer" style="display: none; margin-bottom: 0.75rem; background: var(--card-bg, #fff); border: 1px solid var(--border-color, #e2e8f0); border-radius: 8px; padding: 1rem; max-height: 280px; overflow-y: auto;">
         <div style="font-weight: 600; margin-bottom: 0.5rem; display: flex; justify-content: space-between;">
-          <span>📋 33道高频简答题目速览</span>
+          <span>📋 <span id="jdDrawerTitleCount">32</span>道必背简答题目速览</span>
           <span style="font-size: 0.8rem; color: #64748b; cursor: pointer;" id="btnCloseJdDrawer">✕ 关闭目录</span>
         </div>
         <div id="jdListItems" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0.5rem;"></div>
@@ -1292,6 +1301,7 @@
 
   <!-- 离线静态题库数据分包并行加载 (支持浏览器多线程加速与Disk Cache本地强缓存) -->
   <script src="data_exam_gold.js"></script>
+  <script src="data_jianda_fast_32.js"></script>
   <script src="data_jianda_32.js"></script>
   <script src="data_shishi_100.js"></script>
   <script src="data_chapter_choice.js"></script>
@@ -1303,6 +1313,7 @@
   <script>
     // 题库全局数据集安全绑定引用 (已解耦分包并开启Disk Cache)
     var GOLD_EXAM_DATA = window.GOLD_EXAM_DATA || {};
+    var JIANDA_FAST_32_DATA = window.JIANDA_FAST_32_DATA || [];
     var JIANDA_32_DATA = window.JIANDA_32_DATA || [];
     var SHISHI_100_DATA = window.SHISHI_100_DATA || [];
     var CHAPTER_CHOICE_DATA = window.CHAPTER_CHOICE_DATA || [];
@@ -3154,36 +3165,106 @@
 
 
     // ==========================================
-    // 32 SHORT-ANSWER RECITATION (JIANDA) MODULE
+    // 32/33 SHORT-ANSWER RECITATION (JIANDA) MODULE
+    // 快速记忆精练版 (32题) + 官方标准详答版 (33题) 双模式自由切换
     // ==========================================
-    let jdCurrentList = JIANDA_32_DATA.slice();
+    let jdVersion = 'fast'; // 'fast' (快速记忆精练版 · 默认) or 'full' (官方标准详答版)
     let jdCurrentIdx = 0;
     let jdMode = 'hide'; // 'hide' (default) or 'full'
     let jdRevealed = false;
     let jdMastered = [];
 
-    try {
-      const savedJd = localStorage.getItem('zz_jianda_mastered');
-      if (savedJd) {
-        jdMastered = JSON.parse(savedJd);
+    function getJdActiveSource() {
+      if (jdVersion === 'fast') {
+        return (typeof JIANDA_FAST_32_DATA !== 'undefined' && JIANDA_FAST_32_DATA.length > 0)
+          ? JIANDA_FAST_32_DATA
+          : (typeof window !== 'undefined' && window.JIANDA_FAST_32_DATA ? window.JIANDA_FAST_32_DATA : []);
       }
-    } catch (e) {
-      jdMastered = [];
+      return (typeof JIANDA_32_DATA !== 'undefined' && JIANDA_32_DATA.length > 0)
+        ? JIANDA_32_DATA
+        : (typeof window !== 'undefined' && window.JIANDA_32_DATA ? window.JIANDA_32_DATA : []);
     }
 
-    function saveJdMastered() {
+    let jdCurrentList = getJdActiveSource().slice();
+
+    function loadJdMastered() {
+      const storageKey = jdVersion === 'fast' ? 'zz_jianda_fast_mastered' : 'zz_jianda_mastered';
       try {
-        localStorage.setItem('zz_jianda_mastered', JSON.stringify(jdMastered));
+        const savedJd = localStorage.getItem(storageKey);
+        if (savedJd) {
+          jdMastered = JSON.parse(savedJd);
+        } else {
+          jdMastered = [];
+        }
+      } catch (e) {
+        jdMastered = [];
+      }
+    }
+    loadJdMastered();
+
+    function saveJdMastered() {
+      const storageKey = jdVersion === 'fast' ? 'zz_jianda_fast_mastered' : 'zz_jianda_mastered';
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(jdMastered));
       } catch (e) {}
     }
 
+    function updateJdFilterPills() {
+      const source = getJdActiveSource();
+      const total = source.length;
+      const coreCount = 16;
+      const btnAll = document.querySelector('#jdCatFilter [data-jdcat="all"]');
+      const btnCore = document.querySelector('#jdCatFilter [data-jdcat="core"]');
+      const btnExtra = document.querySelector('#jdCatFilter [data-jdcat="extra"]');
+      if (btnAll) btnAll.textContent = '全部 (' + total + '题)';
+      if (btnCore) btnCore.textContent = '🔥 考前核心重点 (前16题)';
+      if (btnExtra) btnExtra.textContent = '📘 拓展必背 (' + (coreCount + 1) + '~' + total + '题)';
+      const jumpInput = document.getElementById('jdJumpInput');
+      if (jumpInput) {
+        jumpInput.max = total;
+        jumpInput.placeholder = '1-' + total;
+      }
+      const drawerTitle = document.getElementById('jdDrawerTitleCount');
+      if (drawerTitle) drawerTitle.textContent = total;
+    }
+
+    function switchJdVersion(ver) {
+      if (ver === jdVersion) return;
+      jdVersion = ver;
+      sound.playClick();
+      const vBtns = document.querySelectorAll('#jdVersionToggle .pill-btn');
+      vBtns.forEach(function(b) {
+        const isTarget = b.dataset.jdver === ver;
+        b.classList.toggle('active', isTarget);
+        if (isTarget && ver === 'fast') {
+          b.style.fontWeight = '700';
+          b.style.color = '#4f46e5';
+        } else {
+          b.style.fontWeight = '';
+          b.style.color = '';
+        }
+      });
+      const tipEl = document.getElementById('jdVersionTip');
+      if (tipEl) {
+        tipEl.textContent = ver === 'fast'
+          ? '🎯 答案以 ①②③ 分条排列，直击核心提纲关键词！'
+          : '📘 官方标准版：涵盖考纲详尽阐述与权威采分大纲全解！';
+      }
+      loadJdMastered();
+      updateJdFilterPills();
+      const catBtns = document.querySelectorAll('#jdCatFilter .pill-btn');
+      catBtns.forEach(function(b) { b.classList.toggle('active', b.dataset.jdcat === 'all'); });
+      filterJianda('all');
+    }
+
     function filterJianda(cat) {
+      const source = getJdActiveSource();
       if (!cat || cat === 'all') {
-        jdCurrentList = JIANDA_32_DATA.slice();
+        jdCurrentList = source.slice();
       } else if (cat === 'core') {
-        jdCurrentList = JIANDA_32_DATA.filter(function(q) { return q.isCore || q.num <= 16; });
+        jdCurrentList = source.filter(function(q) { return q.isCore || q.num <= 16; });
       } else if (cat === 'extra') {
-        jdCurrentList = JIANDA_32_DATA.filter(function(q) { return !q.isCore && q.num > 16; });
+        jdCurrentList = source.filter(function(q) { return !q.isCore && q.num > 16; });
       }
       jdCurrentIdx = 0;
       jdRevealed = false;
@@ -3191,10 +3272,11 @@
     }
 
     function updateJdProgress() {
-      const total = JIANDA_32_DATA.length;
+      const source = getJdActiveSource();
+      const total = source.length;
       let count = 0;
-      for (let i = 0; i < JIANDA_32_DATA.length; i++) {
-        if (jdMastered.indexOf(JIANDA_32_DATA[i].id) >= 0) {
+      for (let i = 0; i < source.length; i++) {
+        if (jdMastered.indexOf(source[i].id) >= 0) {
           count++;
         }
       }
@@ -3260,20 +3342,35 @@
           '</div>';
       } else {
         const renderedPoints = q.keyPoints.map(function(pt, idx) {
-          let formatted = pt.replace(/^([第一二三四五六七八九十、]+|首先|其次|再次|最后|\(\d+\)|①|②|③|④|⑤)/, '<span style="font-weight:bold; color:#d97706;">$1</span>');
-          return '<div style="margin-bottom: 0.85rem; line-height: 1.7; font-size: 0.96rem; padding-left: 0.5rem; border-left: 3px solid #e2e8f0;">' + formatted + '</div>';
+          // 精准美化：高亮序号与关键提纲冒号前关键词
+          let formatted = pt.replace(/^([①②③④⑤⑥⑦⑧⑨⑩\d\.\、\s]+)([^：:\s]+[：:])?/, function(m, p1, p2) {
+            let res = '<span style="font-weight:bold; color:#d97706; margin-right: 0.35rem;">' + p1 + '</span>';
+            if (p2) {
+              res += '<span style="font-weight:700; color:#0f172a;">' + p2 + '</span> ';
+            }
+            return res;
+          });
+          return '<div style="margin-bottom: 0.85rem; line-height: 1.7; font-size: 0.96rem; padding-left: 0.6rem; border-left: 3px solid ' + (isCore ? '#f59e0b' : '#38bdf8') + ';">' + formatted + '</div>';
         }).join('');
 
+        const headerTitle = jdVersion === 'fast' ? '⚡ 极速背诵提纲（共 ' + q.keyPoints.length + ' 点）：' : '🎯 标准答题要点（共 ' + q.keyPoints.length + ' 点）：';
         pointsHtml = '<div style="margin-top: 1rem; background: var(--bg-card, #f8fafc); padding: 1.2rem; border-radius: 8px; border: 1px solid var(--border-color, #e2e8f0);">' +
           '<div style="font-weight: 700; color: #0284c7; margin-bottom: 0.75rem; font-size: 0.95rem; display: flex; justify-content: space-between; align-items: center;">' +
-          '<span>🎯 标准答题要点（共 ' + q.keyPoints.length + ' 点）：</span>' +
+          '<span>' + headerTitle + '</span>' +
           '<span style="font-size: 0.78rem; color: #64748b; cursor: pointer;" onclick="toggleJdReveal()">[点击重新遮挡 (空格)]</span>' +
           '</div>' + renderedPoints + '</div>';
       }
 
-      const catBadge = isCore
-        ? '<span style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; font-size: 0.75rem; font-weight: 700; padding: 0.25rem 0.65rem; border-radius: 4px; box-shadow: 0 1px 3px rgba(245,158,11,0.3);">🔥 考前核心重点 (重中之重)</span>'
-        : '<span style="background: #e0f2fe; color: #0284c7; font-size: 0.75rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 4px;">📘 拓展高频必背</span>';
+      let catBadge = '';
+      if (jdVersion === 'fast') {
+        catBadge = isCore
+          ? '<span style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; font-size: 0.75rem; font-weight: 700; padding: 0.25rem 0.65rem; border-radius: 4px; box-shadow: 0 1px 3px rgba(245,158,11,0.3);">⚡ 快速提纲 · 核心重点</span>'
+          : '<span style="background: #e0e7ff; color: #4338ca; font-size: 0.75rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 4px;">⚡ 快速提纲 · 拓展必背</span>';
+      } else {
+        catBadge = isCore
+          ? '<span style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; font-size: 0.75rem; font-weight: 700; padding: 0.25rem 0.65rem; border-radius: 4px; box-shadow: 0 1px 3px rgba(245,158,11,0.3);">🔥 官方详答 · 核心重点</span>'
+          : '<span style="background: #e0f2fe; color: #0284c7; font-size: 0.75rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 4px;">📘 官方详答 · 拓展必背</span>';
+      }
 
       card.innerHTML = '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">' +
         '<div style="display: flex; align-items: center; gap: 0.5rem;">' +
@@ -3322,7 +3419,8 @@
     function renderJdListDrawer() {
       const container = document.getElementById('jdListItems');
       if (!container) return;
-      container.innerHTML = JIANDA_32_DATA.map(function(item, idx) {
+      const source = getJdActiveSource();
+      container.innerHTML = source.map(function(item, idx) {
         const isM = jdMastered.indexOf(item.id) >= 0;
         const isCurrent = jdCurrentList[jdCurrentIdx] && jdCurrentList[jdCurrentIdx].id === item.id;
         const isCore = item.isCore || item.num <= 16;
@@ -3369,6 +3467,15 @@
     };
 
     function setupJiandaEvents() {
+      // Version Switcher (快速记忆精练版 vs 官方标准详答版)
+      const verBtns = document.querySelectorAll('#jdVersionToggle .pill-btn');
+      verBtns.forEach(function(btn) {
+        btn.onclick = function() {
+          switchJdVersion(btn.dataset.jdver);
+        };
+      });
+      updateJdFilterPills();
+
       // Category Filter
       const catBtns = document.querySelectorAll('#jdCatFilter .pill-btn');
       catBtns.forEach(function(btn) {
@@ -3507,7 +3614,7 @@
       if (btnJump && inputJump) {
         btnJump.onclick = function() {
           const num = parseInt(inputJump.value, 10);
-          const maxNum = JIANDA_32_DATA.length;
+          const maxNum = getJdActiveSource().length;
           if (num >= 1 && num <= maxNum) {
             selectJdById(num);
             inputJump.value = '';
